@@ -164,24 +164,24 @@ func TestStacktrace(test *testing.T) {
 func TestStripDirs(test *testing.T) {
 	input := "/home/user/filename.go"
 	expect := "filename.go"
-	if stripDirectories(input, 0) != expect {
-		test.Errorf("stripDirectories(\"%v\"); Expected: %v Received: %v",
-			input, expect, stripDirectories(input, 0))
+	if StripDirectories(input, 0) != expect {
+		test.Errorf("StripDirectories(\"%v\"); Expected: %v Received: %v",
+			input, expect, StripDirectories(input, 0))
 	}
 
-	if stripDirectories(input, 1) != "user/filename.go" {
-		test.Errorf("stripDirectories(\"%v\"); Expected: %v Received: %v",
-			input, expect, stripDirectories(input, 1))
+	if StripDirectories(input, 1) != "user/filename.go" {
+		test.Errorf("StripDirectories(\"%v\"); Expected: %v Received: %v",
+			input, expect, StripDirectories(input, 1))
 	}
 
-	if stripDirectories(input, 2) != "home/user/filename.go" {
-		test.Errorf("stripDirectories(\"%v\"); Expected: %v Received: %v",
-			input, expect, stripDirectories(input, 2))
+	if StripDirectories(input, 2) != "home/user/filename.go" {
+		test.Errorf("StripDirectories(\"%v\"); Expected: %v Received: %v",
+			input, expect, StripDirectories(input, 2))
 	}
 
-	if stripDirectories(input, 3) != "home/user/filename.go" {
-		test.Errorf("stripDirectories(\"%v\"); Expected: %v Received: %v",
-			input, expect, stripDirectories(input, 3))
+	if StripDirectories(input, 3) != "home/user/filename.go" {
+		test.Errorf("StripDirectories(\"%v\"); Expected: %v Received: %v",
+			input, expect, StripDirectories(input, 3))
 	}
 }
 

@@ -22,9 +22,21 @@ func (self *Log) Message() string {
 	return fmt.Sprintf(self.messageFmt, self.args...)
 }
 
+type Caller func(logger *Logger, level Level) (string, int, error)
+
+var DefaultCaller Caller = func(logger *Logger, level Level) (string, int, error) {
+	_, file, line, ok := runtime.Caller(3)
+	if ok == false {
+		return "", 0, fmt.Errorf("Failed to find the calling method.")
+	}
+
+	return StripDirectories(file, 2), line, nil
+}
+
 type Logger struct {
 	Prefix    string
 	Appenders []Appender
+	Caller    Caller
 }
 
 // Log a message and a level to a logger instance. This returns a
@@ -59,12 +71,15 @@ func (self *Logger) Stackf(level Level, stackErr error, messageFmt string, args 
 func (self *Logger) logf(level Level, messageFmt string, args ...interface{}) (*Log, []error) {
 	var errors []error
 
-	_, file, line, ok := runtime.Caller(2)
-	if ok == false {
-		return nil, []error{fmt.Errorf("Failed to find the calling method.")}
+	caller := self.Caller
+	if caller == nil {
+		caller = DefaultCaller
 	}
 
-	file = stripDirectories(file, 2)
+	file, line, err := caller(self, level)
+	if err != nil {
+		return nil, []error{err}
+	}
 
 	log := &Log{
 		Prefix:     self.Prefix,
@@ -126,7 +141,7 @@ func stacktrace() []string {
 			break
 		}
 
-		ret = append(ret, fmt.Sprintf("at %s:%d", stripDirectories(file, 2), line))
+		ret = append(ret, fmt.Sprintf("at %s:%d", StripDirectories(file, 2), line))
 	}
 
 	return ret
@@ -148,7 +163,7 @@ func (self *StackError) Error() string {
 	return fmt.Sprintf("%s\n\t%s", self.Message, strings.Join(self.Stacktrace, "\n\t"))
 }
 
-func stripDirectories(filepath string, toKeep int) string {
+func StripDirectories(filepath string, toKeep int) string {
 	var idxCutoff int
 	if idxCutoff = strings.LastIndex(filepath, "/"); idxCutoff == -1 {
 		return filepath
